@@ -1,10 +1,12 @@
+package Lexer;
+
 import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 public class Lexer {
-    public Lexer(BufferedReader bufferedReader) throws IOException {
+    public Lexer(BufferedReader bufferedReader) {
         this.bufferedReader = bufferedReader;
     }
 
@@ -37,7 +39,7 @@ public class Lexer {
         num = 0;
     }
 
-    public boolean next() {
+    public boolean next() throws IOException {
         String outputFilePath = "output.txt"; // 输出文件的路径
         getToken();
         if (type != null) {
@@ -48,23 +50,19 @@ public class Lexer {
                 System.out.println(type + " " + token);
             }
         }
-        try {
-            FileWriter fileWriter = new FileWriter(outputFilePath, true);
-            PrintWriter printWriter = new PrintWriter(fileWriter);
-            if (type != null) {
-                if (type == LexType.INTCON) {
-                    printWriter.println(type + " " + num);
-                } else {
-                    printWriter.println(type + " " + token);
-                }
+        FileWriter fileWriter = new FileWriter(outputFilePath, true);
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+        if (type != null) {
+            if (type == LexType.INTCON) {
+                printWriter.println(type + " " + num);
+            } else {
+                printWriter.println(type + " " + token);
             }
-
-            // 关闭文件输出流
-            printWriter.close();
-//            System.out.println("文本已成功写入到 " + outputFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        // 关闭文件输出流
+        printWriter.close();
+//            System.out.println("文本已成功写入到 " + outputFilePath);
         type = null;
         token = "";
         return p < source.length();

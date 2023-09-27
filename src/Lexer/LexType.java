@@ -1,3 +1,5 @@
+package Lexer;
+
 public enum LexType {
     MAINTK,
     CONSTTK,
