@@ -1,28 +1,13 @@
 package Lexer;
 
 import java.io.BufferedReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 public class Lexer {
-    public Lexer(BufferedReader bufferedReader) {
-        this.bufferedReader = bufferedReader;
-    }
 
-    private String source;
-    private int p;
-    private String token;
-    private LexType type;
-    private int line;
-    private int num;
-    private final String[] key = {"main", "const", "int", "break", "continue", "if",
-            "else", "for", "getint", "printf", "return", "void"};
-    private final LexType[] lexTypes = LexType.values();
+    private static Lexer lexer = null;
 
-    private final BufferedReader bufferedReader;
-
-    public void createSource() throws IOException {
+    private Lexer(BufferedReader bufferedReader) throws IOException {
         int currentChar;
         StringBuilder stringBuilder = new StringBuilder();
         while ((currentChar = bufferedReader.read()) != -1) {
@@ -32,44 +17,47 @@ public class Lexer {
         bufferedReader.close(); // 关闭文件
         source = stringBuilder.toString();
         line = 1;
-//        p = source.charAt(0);
         p = 0;
         token = "";
         type = null;
         num = 0;
     }
 
-    public boolean next() throws IOException {
-        String outputFilePath = "output.txt"; // 输出文件的路径
-        getToken();
-        if (type != null) {
-            if (type == LexType.INTCON) {
+    private String source;
+    private int p;
+    private int lastP;
+    private String preRead;
+    private LexType preType;
+    private String prePreRead;
+    private LexType prePreType;
+    private String token;
+    private String lastToken;
+    private LexType type;
+    private LexType lastType;
+    private int line;
+    private int num;
+    private final String[] key = {"main", "const", "int", "break", "continue", "if",
+            "else", "for", "getint", "printf", "return", "void"};
+    private final LexType[] lexTypes = LexType.values();
 
-                System.out.println(type + " " + num);
-            } else {
-                System.out.println(type + " " + token);
-            }
-        }
-        FileWriter fileWriter = new FileWriter(outputFilePath, true);
-        PrintWriter printWriter = new PrintWriter(fileWriter);
-        if (type != null) {
-            if (type == LexType.INTCON) {
-                printWriter.println(type + " " + num);
-            } else {
-                printWriter.println(type + " " + token);
-            }
-        }
 
-        // 关闭文件输出流
-        printWriter.close();
-//            System.out.println("文本已成功写入到 " + outputFilePath);
-        type = null;
-        token = "";
-        return p < source.length();
+    public static void create(BufferedReader bufferedReader) throws IOException {
+        if (lexer == null) {
+            lexer = new Lexer(bufferedReader);
+        }
     }
 
-    public void getToken() {
-//        StringBuilder tokenBuilder = new StringBuilder();
+    public static Lexer getInstance() {
+        return lexer;
+    }
+
+    public boolean next() {
+        boolean flag = p < source.length();
+        if (!flag) {
+            return false;
+        }
+        type = null;
+        token = "";
         char c = source.charAt(p);
         if (c == '_' || Character.isLetter(c)) {
             token += c;
@@ -143,6 +131,7 @@ public class Lexer {
                 if (c == '&') {
                     token = "&&";
                     type = LexType.AND;
+                    p++;
                 }
             }
         } else if (c == '|') {
@@ -152,6 +141,7 @@ public class Lexer {
                 if (c == '|') {
                     token = "||";
                     type = LexType.OR;
+                    p++;
                 }
             }
         } else if (c == '/') {
@@ -165,6 +155,7 @@ public class Lexer {
                     line++;
                 }
                 p++;
+                return next();
             } else if (p < source.length() && source.charAt(p) == '*') {
                 int p1 = p, p2 = p + 1;
                 while (p2 < source.length() && (!(source.charAt(p1) == '*' && source.charAt(p2) == '/'))) {
@@ -173,6 +164,7 @@ public class Lexer {
                     p2++;
                 }
                 p = p2 + 1;
+                return next();
             } else {
                 token = "/";
                 type = LexType.DIV;
@@ -228,7 +220,17 @@ public class Lexer {
             type = LexType.RBRACE;
         } else {
             p++;
+            return next();
         }
+        return flag;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public LexType getType() {
+        return type;
     }
 
     public void reserve() {
@@ -241,5 +243,90 @@ public class Lexer {
             }
         }
         type = LexType.IDENFR;
+    }
+
+    public void back() {
+        p = lastP;
+        token = lastToken;
+        type = lastType;
+    }
+
+    public void pre(int n) {
+        lastP = p;
+        lastToken = token;
+        lastType = type;
+        for (int i = 0; i < n; i++) {
+            next();
+            if (i == 0) {
+                preRead = getToken();
+                preType = getType();
+            } else {
+                if (p <= source.length()) {
+                    prePreRead = getToken();
+                    prePreType = getType();
+                }
+            }
+        }
+    }
+
+    public String getPreRead() {
+        lastP = p;
+        lastToken = token;
+        lastType = type;
+        if (next()) {
+            preRead = getToken();
+            back();
+        }
+        return preRead;
+    }
+
+    public String getPrePreRead() {
+        lastP = p;
+        lastToken = token;
+        lastType = type;
+        if (next()) {
+            if (next()) {
+                prePreRead = getToken();
+                back();
+            }
+        }
+        return prePreRead;
+    }
+
+    public LexType getPreType() {
+        lastP = p;
+        lastToken = token;
+        lastType = type;
+        if (next()) {
+            preType = getType();
+            back();
+        }
+        return preType;
+    }
+
+    public LexType getPrePreType() {
+        lastP = p;
+        lastToken = token;
+        lastType = type;
+        if (next()) {
+            if (next()) {
+                prePreType = getType();
+                back();
+            }
+        }
+        return prePreType;
+    }
+
+    public boolean judge() {
+        int a = p;
+        while (a < source.length()) {
+            if (source.charAt(a) == ';') {
+                break;
+            } else {
+                if (source.charAt(a) == '=') return true;
+            }
+            a++;
+        }
+        return false;
     }
 }
