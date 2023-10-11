@@ -23,7 +23,7 @@ public class Lexer {
         num = 0;
     }
 
-    private String source;
+    private final String source;
     private int p;
     private int lastP;
     private String preRead;
@@ -218,6 +218,10 @@ public class Lexer {
             p++;
             token += c;
             type = LexType.RBRACE;
+        } else if (c == '\n') {
+            line++;
+            p++;
+            return next();
         } else {
             p++;
             return next();
@@ -317,16 +321,8 @@ public class Lexer {
         return prePreType;
     }
 
-    public boolean judge() {
-        int a = p;
-        while (a < source.length()) {
-            if (source.charAt(a) == ';') {
-                break;
-            } else {
-                if (source.charAt(a) == '=') return true;
-            }
-            a++;
-        }
-        return false;
+
+    public int getLine() {
+        return line;
     }
 }
