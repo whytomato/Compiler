@@ -1,5 +1,6 @@
-import Lexer.Lexer;
-import Parser.Parser;
+import error.Error;
+import lexer.Lexer;
+import parser.Parser;
 
 import java.io.*;
 
@@ -10,7 +11,8 @@ public class Compiler {
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         Lexer.create(bufferedReader);
         Lexer lexer = Lexer.getInstance();
-        String outputFilePath = "output.txt"; // 输出文件的路径
+        Error error = Error.getInstance();
+        String outputFilePath = "error.txt"; // 输出文件的路径
         FileWriter fileWriter = new FileWriter(outputFilePath, false);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         Parser parser = new Parser();
@@ -24,7 +26,12 @@ public class Compiler {
 //                }
 //            }
         }
-        printWriter.print(parser.stringBuilder);
+        printWriter.println(error.getPrint());
+//        printWriter.print(Parser.stringBuilder);
         printWriter.close();
+//        error.errorOutput();
+
+
+//        TableRoot.getInstance().printf();
     }
 }
