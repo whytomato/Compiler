@@ -1,3 +1,4 @@
+import IR.IRModule;
 import error.Error;
 import lexer.Lexer;
 import parser.Parser;
@@ -12,7 +13,9 @@ public class Compiler {
         Lexer.create(bufferedReader);
         Lexer lexer = Lexer.getInstance();
         Error error = Error.getInstance();
-        String outputFilePath = "error.txt"; // 输出文件的路径
+//        String outputFilePath = "output.txt"; // 输出文件的路径
+//        String outputFilePath = "error.txt"; // 输出文件的路径
+        String outputFilePath = "llvm_ir.txt"; // 输出文件的路径
         FileWriter fileWriter = new FileWriter(outputFilePath, false);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         Parser parser = new Parser();
@@ -26,12 +29,17 @@ public class Compiler {
 //                }
 //            }
         }
-        printWriter.println(error.getPrint());
+//        printWriter.println(error.getPrint());
 //        printWriter.print(Parser.stringBuilder);
-        printWriter.close();
+
 //        error.errorOutput();
 
 
 //        TableRoot.getInstance().printf();
+
+        IRModule module = IRModule.getInstance();
+//        module.visit();
+        printWriter.println(module.visit());
+        printWriter.close();
     }
 }

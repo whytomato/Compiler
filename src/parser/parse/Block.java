@@ -46,7 +46,7 @@ public class Block {
         Block block = new Block();
         if (lexer.getType() != LexType.LBRACE) Parser.error();
         if (!flag) {
-            tableRoot.save();
+            tableRoot.createTable();
         }
         Parser.stringBuilder.append("LBRACE {\n");
         lexer.next();
@@ -59,7 +59,8 @@ public class Block {
 
         if (!(tableRoot.getSymbol(tableRoot.getSymbolTable().getFatherName()) instanceof Val)) {
             Func func = (Func) tableRoot.getSymbol(tableRoot.getSymbolTable().getFatherName());
-            if ((!blockItem.stmt.hasReturn) && func.getType() == -1 && func.getRetype() == 0 && flag)
+            if (flag && (blockItem.stmt == null || !blockItem.stmt.hasReturn)
+                    && func.getType() == -1 && func.getRetype() == 0)
                 error.getError('g', lexer.getLine());
         }
 //        tableRoot.printf();

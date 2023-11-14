@@ -10,8 +10,8 @@ public class BlockItem {
     static Lexer lexer = Lexer.getInstance();
 
     public BlockItem() {
-        this.decl = new Decl();
-        this.stmt = new Stmt();
+        this.decl = null;
+        this.stmt = null;
     }
 
     public static BlockItem BlockItemParse() {

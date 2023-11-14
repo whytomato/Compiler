@@ -40,7 +40,7 @@ public class FuncRParams {
             for (int i = 0; i < func.getParamTypeList().size(); i++) {
                 if (i < funcRParams.expArrayList.size()) {
                     int dim = funcRParams.expArrayList.get(i).dim;
-                    if (dim == 3) error.getError('e', line);
+                    if (dim == -1) error.getError('e', line);
                     else {
                         if (dim != func.getParamTypeList().get(i)) error.getError('e', line);
                     }

@@ -16,7 +16,7 @@ public class Parser {
 //        tableRoot.save();
         compUnit.CompUnitParse();
         Parser.stringBuilder.append("<CompUnit>\n");
-        printf();
+//        printf();
     }
 
     public static void error() {
@@ -27,6 +27,8 @@ public class Parser {
 
 
     public void printf() {
-//        System.out.println(stringBuilder);
+        System.out.println(stringBuilder);
+
+
     }
 }

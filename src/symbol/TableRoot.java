@@ -19,7 +19,7 @@ public class TableRoot {
         return tableRoot;
     }
 
-    public void save() {
+    public void createTable() {
         if (num == 0 || tableRoot.getSymbolTable().getFatherName() == null) {
             num += 1;
             tableHashMap.put(num, new SymbolTable(num));
@@ -29,7 +29,7 @@ public class TableRoot {
         }
     }
 
-    public void save(String name) {
+    public void createTable(String name) {
         num += 1;
         tableHashMap.put(num, new SymbolTable(num, name));
     }

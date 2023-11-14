@@ -40,7 +40,7 @@ public class FuncDef {
         lexer.next();
         if (lexer.getType() != LexType.LPARENT) Parser.error();
         Parser.stringBuilder.append("LPARENT (\n");
-        tableRoot.save(funcDef.ident);
+        tableRoot.createTable(funcDef.ident);
         lexer.next();
         funcDef.funcFParams = new FuncFParams();
         if (lexer.getType() != LexType.RPARENT) {

@@ -23,7 +23,7 @@ public class MainFuncDef {
         lexer.next();
         Parser.stringBuilder.append("MAINTK main\n");
         lexer.next();
-        tableRoot.save("main");
+        tableRoot.createTable("main");
         Func func = new Func(tableRoot.getNum() - 1, "main", -1, 0, new ArrayList<>());
         tableRoot.getSymbolTable(tableRoot.getNum() - 1).save(func);
         Parser.stringBuilder.append("LPARENT (\n");

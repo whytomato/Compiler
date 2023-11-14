@@ -24,15 +24,15 @@ public class CompUnit {
 
     public void CompUnitParse() {
         while (lexer.getPreType() != LexType.MAINTK && lexer.getPrePreType() != LexType.LPARENT) {
-            if (tableRoot.getNum() != 1) tableRoot.save();
+            if (tableRoot.getNum() != 1) tableRoot.createTable();
             Parser.compUnit.declArrayList.add(Decl.DeclParse());
         }
         while (lexer.getPreType() != LexType.MAINTK) {
-            if (tableRoot.getNum() != 1) tableRoot.save();
+            if (tableRoot.getNum() != 1) tableRoot.createTable();
             Parser.compUnit.funcDefArrayList.add(FuncDef.FuncDefParse());
             Parser.stringBuilder.append("<FuncDef>\n");
         }
-        if (tableRoot.getNum() != 1) tableRoot.save();
+        if (tableRoot.getNum() != 1) tableRoot.createTable();
         Parser.compUnit.mainFuncDef = MainFuncDef.MainFuncDefParse();
         Parser.stringBuilder.append("<MainFuncDef>\n");
     }//CompUnit → {Decl} {FuncDef} MainFuncDef

@@ -102,7 +102,7 @@ public class UnaryExp {
                     Parser.stringBuilder.append("RPARENT )\n");
                     if (func != null) {
                         if (func.getRetype() == 0) unaryExp.dim = 0;
-                        else unaryExp.dim = 3;
+                        else unaryExp.dim = -1;
                     }
                     lexer.next();
                 }
