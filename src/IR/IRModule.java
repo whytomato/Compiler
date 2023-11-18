@@ -83,16 +83,26 @@ public class IRModule {
 //            }
 //        }
         StringBuilder sb = new StringBuilder();
+        sb.append("""
+                declare i32 @getint()
+                declare void @putint(i32)
+                declare void @putch(i32)
+                declare void @putstr(i8*)
+                                
+                """);
+//        System.out.println(sb);
         for (GlobalValue globalValue : module.globalValues) {
 
             sb.append(globalValue);
             sb.append("\n");
-            System.out.println(globalValue);
+//            System.out.println(globalValue);
         }
+        sb.append("\n");
         for (Function function : module.functions) {
             sb.append(function);
-            System.out.println(function);
+//            System.out.println(function);
         }
+        System.out.println(sb);
         return sb.toString();
 //        for (int i = 0; i < module.functions.get(0).getBasicBlocks().get(0).getInstructions().size(); i++) {
 //            Instruction instruction = module.functions.get(0).getBasicBlocks().get(0).getInstructions().get(i);

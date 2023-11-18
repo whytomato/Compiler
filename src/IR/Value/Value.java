@@ -52,6 +52,10 @@ public class Value {
         return valNumber;
     }
 
+    public void setValNumber() {
+        valNumber = -1;
+    }
+
     public String getMemName() {
         return null;
     }
@@ -59,5 +63,9 @@ public class Value {
     @Override
     public String toString() {
         return null;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 }

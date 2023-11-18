@@ -15,6 +15,6 @@ public class PointerType implements Type {
 
     @Override
     public String toString() {
-        return "i32*";
+        return type.toString() + "*";
     }
 }

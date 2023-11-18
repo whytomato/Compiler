@@ -12,4 +12,8 @@ public class FuncType implements Type {
         if (retype == 1) return "void";
         else return "i32";
     }
+
+    public int getRetype() {
+        return retype;
+    }
 }

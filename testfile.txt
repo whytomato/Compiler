@@ -1,8 +1,32 @@
-int b[2][2][3]={1,2,3,4,5,6,7,8,9,10,11,12};
-int c=b[1][1][1];
 
-int main(){
-int d[1][2][3][4][5];
-int b;
-return 1;
+
+
+int f0() {
+	return 1;
 }
+
+int f1(int a[], int b[][3], int c[]) {
+    return a[0] + b[0][0] + c[0];
+}
+
+int f2(int a, int b) {
+    int c;
+    int flag;
+    int a1[2] = {1, 2};
+    int a2[3][3] = {{1, 2, 3}, {1, 2, 3}, {1, 2, 3}};
+
+    c = -(a*b) + a/b + (a%b) -1 + f1(a1, a2, a2[0]) - +f0();
+
+
+    return c;
+}
+
+int main() {
+    int a,b;
+    a = getint();
+    b = getint();
+    printf("%d",f2(a,b));
+    return 0;
+}
+
+

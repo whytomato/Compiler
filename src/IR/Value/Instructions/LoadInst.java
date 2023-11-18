@@ -1,5 +1,6 @@
 package IR.Value.Instructions;
 
+import IR.Type.PointerType;
 import IR.Type.Type;
 import IR.Value.BasicBlock;
 import IR.Value.Value;
@@ -33,7 +34,21 @@ public class LoadInst extends Instruction {
 
     @Override
     public String toString() {
-        return "    " + getMemName() + " = load " + getType() + ", " +
-                pointer.getType() + " " + pointer.getMemName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("    ").append(getMemName()).append(" = load ");
+//        if (((PointerType) getType()).getType() instanceof PointerType pointerType) {
+//            if (pointerType.getType() instanceof ArrayType) {
+//
+//            } else sb.append(((PointerType) getType()).getType());
+//        } else {
+//            sb.append(((PointerType) getType()).getType());
+//        }
+//        sb.append(pointer.getType()).append(pointer.getName());
+        sb.append(((PointerType) pointer.getType()).getType());
+        sb.append(", ");
+        sb.append(pointer.getType());
+        sb.append(" ");
+        sb.append(pointer.getMemName());
+        return sb.toString();
     }
 }

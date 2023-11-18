@@ -14,7 +14,6 @@ public class AllocInst extends Instruction {
     private BasicBlock bb;
     private Value value;
     private ArrayList<Integer> arraySize;
-    private ArrayList<Integer> P;
 
     public AllocInst(String name, Type type, BasicBlock bb) {
         super(name, type);
@@ -39,40 +38,37 @@ public class AllocInst extends Instruction {
         this.value = value;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("    ").append(getMemName()).append(" = alloca ");
-        if (arraySize != null) {
-            print(0, sb);
-        } else sb.append(((PointerType) getType()).getType());
-        return sb.toString();
-    }
 
     public void addSize(int num) {
         if (arraySize == null) arraySize = new ArrayList<>();
         arraySize.add(num);
     }
 
-    public void calP() {
-        if (P == null) P = new ArrayList<>();
-        Integer mul = 1;
-        for (Integer i : arraySize) {
-            mul *= i;
-        }
-        for (Integer i : arraySize) {
-            mul /= i;
-            P.add(mul);
-        }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("    ").append(getMemName()).append(" = alloca ");
+//        if (((PointerType) getType()).getType() instanceof ArrayType) {
+//            print(sb, (ArrayType) ((PointerType) getType()).getType());
+//        } else if (((PointerType) getType()).getType() instanceof PointerType pointerType) {
+//            if (pointerType.getType() instanceof ArrayType) {
+//                print(sb, (ArrayType) ((PointerType) ((PointerType) getType()).getType()).getType());
+//                sb.append("*");
+//            } else sb.append(((PointerType) getType()).getType());
+//        } else {
+//            sb.append(((PointerType) getType()).getType());
+//        }
+        sb.append(((PointerType) getType()).getType());
+        return sb.toString();
     }
 
-    public void print(int num, StringBuilder sb) {
-        for (int i = num; i < arraySize.size(); i++) {
-            sb.append("[").append(arraySize.get(i)).append(" x ");
-        }
-        sb.append("i32");
-        for (Integer i : arraySize) {
-            sb.append("]");
-        }
-    }
+
+//    public void print(StringBuilder sb, ArrayType arrayType) {
+//        if (arrayType.getElementType() instanceof IntegerType) {
+//            sb.append("[").append(arrayType.getArraySize().get(0)).append(" x i32] ");
+//            return;
+//        }
+//        sb.append(arrayType);
+//        sb.append(" ");
+//    }
 }
