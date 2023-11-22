@@ -22,6 +22,9 @@ public class Visitor {
     private Integer offset = 0;
     private Boolean isGlobal = true;
     private BasicBlock currentBB = null;
+    private Function currentFunction = null;
+    private BasicBlock breakBlock = null;
+    private BasicBlock forStmt2Block = null;
 
     public void visitCompUnit() {
         module.pushSymTable();
@@ -52,40 +55,80 @@ public class Visitor {
 
     private void visitConstDef(ConstDef constDef) {
         String name = constDef.Ident;
-        if (!constDef.constExpArrayList.isEmpty()) {
-            ArrayType arrayType = new ArrayType();
-            for (ConstExp constExp : constDef.constExpArrayList) {
-                visitAddExp(constExp.addExp);
-                arrayType.addSize(saveNum);
+        if (isGlobal) {
+            if (!constDef.constExpArrayList.isEmpty()) {
+                ArrayType arrayType = new ArrayType();
+                for (ConstExp constExp : constDef.constExpArrayList) {
+                    visitAddExp(constExp.addExp);
+                    arrayType.addSize(saveNum);
+                    saveNum = null;
+                }
+                GlobalValue globalValue = new GlobalValue(name, new PointerType(arrayType), true);
+                ((ArrayType) ((PointerType) globalValue.getType()).getType()).calP();
+                module.pushSymbol(name, globalValue);
+                module.getGlobalValues().add(globalValue);
+                visitConstInitVal(constDef.constInitval);
+                globalValue.addArrayNum(arrayNum);
+                arrayNum.clear();
+            } else {
+                GlobalValue globalValue = new GlobalValue(name, new PointerType(new IntegerType()), true);
+                module.pushSymbol(name, globalValue);
+                visitConstInitVal(constDef.constInitval);
+                globalValue = (GlobalValue) module.find(name);
+                globalValue.setNum(saveNum);
+                module.getGlobalValues().add(globalValue);
                 saveNum = null;
+                arrayNum.clear();
             }
-            GlobalValue globalValue = new GlobalValue(name, new PointerType(arrayType), true);
-            ((ArrayType) ((PointerType) globalValue.getType()).getType()).calP();
-            module.pushSymbol(name, globalValue);
-            module.getGlobalValues().add(globalValue);
-            visitConstInitVal(constDef.constInitval);
-            globalValue.addArrayNum(arrayNum);
-            arrayNum.clear();
         } else {
-            GlobalValue globalValue = new GlobalValue(name, new PointerType(new IntegerType()), true);
-            module.pushSymbol(name, globalValue);
-            visitConstInitVal(constDef.constInitval);
-            globalValue = (GlobalValue) module.find(name);
-            globalValue.setNum(saveNum);
-            module.getGlobalValues().add(globalValue);
-//            System.out.println(((GlobalValue) module.find(name)).getNum());
-            saveNum = null;
-            arrayNum.clear();
+            if (!constDef.constExpArrayList.isEmpty()) {
+                ArrayType arrayType = new ArrayType();
+                for (ConstExp constExp : constDef.constExpArrayList) {
+                    visitAddExp(constExp.addExp);
+                    arrayType.addSize(Integer.parseInt(saveValue.getMemName()));
+                    saveValue = null;
+                }
+                AllocInst allocInst = factory.buildAllocInst(name, new PointerType(arrayType), currentBB);
+                module.pushSymbol(name, allocInst);
+                ((ArrayType) ((PointerType) allocInst.getType()).getType()).calP();
+                visitConstInitVal(constDef.constInitval, allocInst);
+                offset = 0;
+            } else {
+                AllocInst allocInst = factory.buildAllocInst(name, new PointerType(new IntegerType()), currentBB);
+                module.pushSymbol(name, allocInst);
+                visitConstInitVal(constDef.constInitval);
+                allocInst = (AllocInst) module.find(name);
+                allocInst.setValue(saveValue);
+                factory.buildStoreInst(null, currentBB, saveValue, allocInst);
+                saveValue = null;
+            }
+
         }
     }
 
     private void visitConstInitVal(ConstInitVal constInitVal) {
         if (constInitVal.constExp != null) {
             visitConstExp(constInitVal.constExp);
-            arrayNum.add(saveNum);
+            if (isGlobal)
+                arrayNum.add(saveNum);
         } else {
             for (ConstInitVal constInitVal1 : constInitVal.constInitValArrayList) {
                 visitConstInitVal(constInitVal1);
+            }
+        }
+    }
+
+    private void visitConstInitVal(ConstInitVal constInitVal, Value value) {
+        if (constInitVal.constExp != null) {
+            visitAddExp(constInitVal.constExp.addExp);
+            ArrayList<Value> values = new ArrayList<>();
+            values.add(new Constant(offset.toString(), new IntegerType()));
+            GetElementPtr getElementPtr = factory.buildGetElementPtr(currentBB, values, value, 0, false);
+            factory.buildStoreInst(null, currentBB, saveValue, getElementPtr);
+            offset += 1;
+        } else {
+            for (ConstInitVal val : constInitVal.constInitValArrayList) {
+                visitConstInitVal(val, value);
             }
         }
     }
@@ -188,7 +231,6 @@ public class Visitor {
                 visitInitVal(val, value);
             }
         }
-
     }
 
     private void visitFuncDef(FuncDef funcDef) {
@@ -199,6 +241,7 @@ public class Visitor {
         else function = factory.buildFunction(name, new FuncType(1));
         module.pushSymbol(name, function);
         module.pushSymTable();
+        currentFunction = function;
         currentBB = factory.buildBasicBlock(function);
         int i = 0;
         ArrayList<Integer> param = new ArrayList<>();
@@ -218,7 +261,10 @@ public class Visitor {
             param.clear();
         }
         visitBlock(funcDef.block);
-        String retName = currentBB.getInstructions().get(currentBB.getInstructions().size() - 1).getName();
+        String retName = null;
+        if (!currentBB.getInstructions().isEmpty()) {
+            retName = currentBB.getInstructions().get(currentBB.getInstructions().size() - 1).getName();
+        }
         if (retName == null || !retName.equals("ret")) {
             factory.buildReturn("ret", null, currentBB, null);
         }
@@ -230,8 +276,10 @@ public class Visitor {
         Function function = factory.buildFunction(name, new FuncType(0));
         module.pushSymbol(name, function);
         module.pushSymTable();
+        currentFunction = function;
         currentBB = factory.buildBasicBlock(function);
         visitBlock(mainFuncDef.block);
+        module.popSymTable();
     }
 
     private void visitBlock(Block block) {
@@ -251,6 +299,7 @@ public class Visitor {
     private void visitStmt(Stmt stmt) {
         String name;
         Value value;
+        BasicBlock condBlock;
         switch (stmt.flag) {
             case 1:
                 name = stmt.lVal.ident;
@@ -279,6 +328,65 @@ public class Visitor {
                 module.pushSymTable();
                 visitBlock(stmt.block);
                 module.popSymTable();
+                break;
+            case 4:
+                condBlock = factory.buildBasicBlock(currentFunction);
+                BasicBlock stmt1Block = factory.buildBasicBlock(currentFunction);
+                BasicBlock stmt2Block = factory.buildBasicBlock(currentFunction);
+                BasicBlock stmt3Block = factory.buildBasicBlock(currentFunction);
+                factory.buildBrInst(currentBB, null, null, null, condBlock, null, null);
+                currentBB = condBlock;
+                visitCond(stmt.cond, stmt1Block, stmt2Block);
+                currentBB = stmt1Block;
+                visitStmt(stmt.stmtArrayList.get(0));
+                if (stmt.stmtArrayList.size() == 1) {
+                    factory.buildBrInst(currentBB, null, null, null, stmt2Block, null, null);
+                } else {
+                    factory.buildBrInst(currentBB, null, null, null, stmt3Block, null, null);
+                }
+
+                currentBB = stmt2Block;
+                if (stmt.stmtArrayList.size() != 1) visitStmt(stmt.stmtArrayList.get(1));
+                factory.buildBrInst(currentBB, null, null, null, stmt3Block, null, null);
+                currentBB = stmt3Block;
+                break;
+            case 5:
+//                visitForStmt(stmt.forStmtArrayList.)
+//                System.out.println(stmt.getHasFor1());
+//                System.out.println(stmt.getHasFor2());
+                BasicBlock forStmt1Block = factory.buildBasicBlock(currentFunction);
+                condBlock = factory.buildBasicBlock(currentFunction);
+                BasicBlock stmtBlock = factory.buildBasicBlock(currentFunction);
+                forStmt2Block = factory.buildBasicBlock(currentFunction);
+                breakBlock = factory.buildBasicBlock(currentFunction);
+                BasicBlock temp1 = forStmt2Block;
+                BasicBlock temp2 = breakBlock;
+                factory.buildBrInst(currentBB, null, null, null, forStmt1Block, null, null);
+                currentBB = forStmt1Block;
+                if (stmt.getHasFor1()) visitForStmt(stmt.forStmtArrayList.get(0));
+                factory.buildBrInst(currentBB, null, null, null, condBlock, null, null);
+                currentBB = condBlock;
+                if (stmt.cond != null) visitCond(stmt.cond, stmtBlock, breakBlock);
+                else
+                    factory.buildBrInst(currentBB, null, null, null, stmtBlock, null, null);
+                currentBB = stmtBlock;
+                visitStmt(stmt.stmtArrayList.get(0));
+                forStmt2Block = temp1;
+                breakBlock = temp2;
+                factory.buildBrInst(currentBB, null, null, null, forStmt2Block, null, null);
+                currentBB = forStmt2Block;
+                if (stmt.getHasFor2()) {
+                    if (stmt.getHasFor1()) visitForStmt(stmt.forStmtArrayList.get(1));
+                    else visitForStmt(stmt.forStmtArrayList.get(0));
+                }
+                factory.buildBrInst(currentBB, null, null, null, condBlock, null, null);
+                currentBB = breakBlock;
+                break;
+            case 6:
+                factory.buildBrInst(currentBB, null, null, null, breakBlock, null, null);
+                break;
+            case 7:
+                factory.buildBrInst(currentBB, null, null, null, forStmt2Block, null, null);
                 break;
             case 8:
                 if (!stmt.expArrayList.isEmpty()) visitExp(stmt.expArrayList.get(0));
@@ -343,9 +451,31 @@ public class Visitor {
         }
     }
 
+    private void visitForStmt(ForStmt forStmt) {
+        String name;
+        Value value;
+        name = forStmt.lVal.ident;
+        value = module.find(name);
+        ArrayList<Value> values = new ArrayList<>();
+        if (!forStmt.lVal.expArrayList.isEmpty()) {
+            for (Exp exp : forStmt.lVal.expArrayList) {
+                visitExp(exp);
+                values.add(saveValue);
+                saveValue = null;
+            }
+            value = factory.buildGetElementPtr(currentBB, values, value, 1, false);
+        } else value = module.find(name);
+        visitExp(forStmt.exp);
+        factory.buildStoreInst(null, currentBB, saveValue, value);
+        saveValue = null;
+    }
 
     private void visitExp(Exp exp) {
         visitAddExp(exp.addExp);
+    }
+
+    private void visitCond(Cond cond, BasicBlock stmt1Block, BasicBlock stmt2Block) {
+        visitLOrExp(cond.lOrExp, stmt1Block, stmt2Block);
     }
 
     private void visitLVal(LVal lVal) {
@@ -456,7 +586,7 @@ public class Visitor {
                 opList.add(unaryExp.unaryOp.unaryOp);
                 visitUnaryExp(unaryExp.unaryExp);
                 for (int i = opList.size() - 1; i >= 0; i--) {
-                    if (!(opList.get(i).equals("+") || opList.get(i).equals("-"))) break;
+                    if (!(opList.get(i).equals("+") || opList.get(i).equals("-") || opList.get(i).equals("!"))) break;
                     else if (opList.get(i).equals("-")) {
                         if (saveValue instanceof Constant) {
                             int num = -Integer.parseInt(saveValue.getMemName());
@@ -465,7 +595,21 @@ public class Visitor {
                         } else {
                             saveValue = factory.buildCalculateValue(new Constant("0", new IntegerType()), saveValue, opList.get(i), new IntegerType(), currentBB);
                         }
-                    } else opList.remove(opList.get(opList.size() - 1));
+                    } else if (opList.get(i).equals("+")) {
+                        opList.remove(opList.get(opList.size() - 1));
+                    } else {
+                        if (saveValue instanceof Constant) {
+                            int num = Integer.parseInt(saveValue.getMemName());
+                            if (num != 0) num = 0;
+                            else num = 1;
+                            ((Constant) saveValue).setMemName(Integer.toString(num));
+                            opList.remove(opList.get(opList.size() - 1));
+                        } else {
+                            saveValue = factory.buildIcmpInst(currentBB, null, new IntegerType(), "==", new Constant("0", new IntegerType()), saveValue);
+                            saveValue = factory.buildZextInst(currentBB, saveValue, new IntegerType());
+                            opList.remove(opList.get(opList.size() - 1));
+                        }
+                    }
                 }
             }
 
@@ -591,6 +735,64 @@ public class Visitor {
                     }
                 }
             }
+        }
+    }
+
+    private void visitRelExp(RelExp relExp) {
+        visitAddExp(relExp.addExpArrayList.get(0));
+        Value value = saveValue;
+        String relOp;
+        for (int i = 1; i < relExp.addExpArrayList.size(); i++) {
+            value = saveValue;
+            relOp = relExp.RelOp.get(i - 1);
+            visitAddExp(relExp.addExpArrayList.get(i));
+            saveValue = factory.buildIcmpInst(currentBB, null, new IntegerType(), relOp, value, saveValue);
+            saveValue = factory.buildZextInst(currentBB, saveValue, new IntegerType());
+        }
+    }
+
+    private void visitEqExp(EqExp eqExp) {
+        visitRelExp(eqExp.relExpArrayList.get(0));
+        Value value = saveValue;
+        String eqOp;
+        for (int i = 1; i < eqExp.relExpArrayList.size(); i++) {
+            value = saveValue;
+            eqOp = eqExp.eqOp.get(i - 1);
+            visitRelExp(eqExp.relExpArrayList.get(i));
+            saveValue = factory.buildIcmpInst(currentBB, null, new IntegerType(), eqOp, value, saveValue);
+            saveValue = factory.buildZextInst(currentBB, saveValue, new IntegerType());
+        }
+    }
+
+    private void visitLAndExp(LAndExp lAndExp, BasicBlock trueBlock, BasicBlock falseBlock) {
+        BasicBlock basicBlock;
+        for (int i = 0; i < lAndExp.eqExpArrayList.size(); i++) {
+            if (i != lAndExp.eqExpArrayList.size() - 1) {
+                basicBlock = factory.buildBasicBlock(currentFunction);
+
+            } else basicBlock = trueBlock;
+            visitEqExp(lAndExp.eqExpArrayList.get(i));
+            saveValue = factory.buildIcmpInst(currentBB, null, new IntegerType(),
+                    "!=", new Constant("0", new IntegerType()), saveValue);
+            if (i != lAndExp.eqExpArrayList.size() - 1) {
+                factory.buildBrInst(currentBB, null, null, saveValue, null, basicBlock, falseBlock);
+                currentBB = basicBlock;
+            }
+
+        }
+    }
+
+    private void visitLOrExp(LOrExp lOrExp, BasicBlock stmt1, BasicBlock stmt2) {
+        BasicBlock basicBlock;
+        for (int i = 0; i < lOrExp.lAndExpArrayList.size(); i++) {
+            if (i != lOrExp.lAndExpArrayList.size() - 1) {
+                basicBlock = factory.buildBasicBlock(currentFunction);
+            } else {
+                basicBlock = stmt2;
+            }
+            visitLAndExp(lOrExp.lAndExpArrayList.get(i), stmt1, basicBlock);
+            factory.buildBrInst(currentBB, null, null, saveValue, null, stmt1, basicBlock);
+            currentBB = i == lOrExp.lAndExpArrayList.size() - 1 ? stmt1 : basicBlock;
         }
     }
 

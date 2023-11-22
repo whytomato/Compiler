@@ -1,32 +1,20 @@
+// #include "test.h"
+int next[4][2]={{1,0},{0,-1},{-1,0},{0,1}};
+const int len=3,next1[4][2]={{1,0},{0,-1},{-1,0},{0,1}};
+const int xxx[2]={1,2};
+int ans=0,arr[2]={3,1};
+int getDif3N(int min,int max){
+    int i=1,j=1,k=1;
+    int cnt=0;
+    int arr1[2]={1,2};
+    for(;;){
 
+        for(;;){
 
+        }
 
-int f0() {
-	return 1;
+    }
+    return cnt;
 }
 
-int f1(int a[], int b[][3], int c[]) {
-    return a[0] + b[0][0] + c[0];
-}
-
-int f2(int a, int b) {
-    int c;
-    int flag;
-    int a1[2] = {1, 2};
-    int a2[3][3] = {{1, 2, 3}, {1, 2, 3}, {1, 2, 3}};
-
-    c = -(a*b) + a/b + (a%b) -1 + f1(a1, a2, a2[0]) - +f0();
-
-
-    return c;
-}
-
-int main() {
-    int a,b;
-    a = getint();
-    b = getint();
-    printf("%d",f2(a,b));
-    return 0;
-}
-
-
+int main(){return 1;}

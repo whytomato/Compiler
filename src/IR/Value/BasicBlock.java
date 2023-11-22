@@ -5,7 +5,9 @@ import IR.Value.Instructions.Instruction;
 import java.util.ArrayList;
 
 public class BasicBlock {
-    ArrayList<Instruction> instructions;
+    private ArrayList<Instruction> instructions;
+    private static int bbNum = -1;
+    private String bbName;
 
     public BasicBlock() {
         this.instructions = new ArrayList<>();
@@ -22,5 +24,21 @@ public class BasicBlock {
             sb.append(instruction).append("\n");
         }
         return sb.toString();
+    }
+
+    public void setBbName() {
+        bbNum += 1;
+        bbName = "B" + bbNum;
+    }
+
+    public String getBbName() {
+        return bbName;
+    }
+
+    public BasicBlock clone() {
+        BasicBlock basicBlock = new BasicBlock();
+        basicBlock.bbName = this.bbName;
+        basicBlock.instructions = new ArrayList<>(this.instructions);
+        return basicBlock;
     }
 }

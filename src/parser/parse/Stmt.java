@@ -17,6 +17,8 @@ public class Stmt {
     public Cond cond;
     public ArrayList<Stmt> stmtArrayList;
     public ArrayList<ForStmt> forStmtArrayList;
+    private Boolean hasFor1;
+    private Boolean hasFor2;
     public String formatString;
     public int flag;
     public boolean hasReturn;
@@ -35,6 +37,8 @@ public class Stmt {
         this.formatString = "";
         this.flag = 0;
         this.hasReturn = false;
+        this.hasFor1 = false;
+        this.hasFor2 = false;
     }
 
     public static Stmt StmtParse() {
@@ -61,10 +65,10 @@ public class Stmt {
             if (lexer.getType() == LexType.ELSETK) {
                 Parser.stringBuilder.append("ELSETK else\n");
                 lexer.next();
-                stmt.flag = 4;
                 stmt.stmtArrayList.add(StmtParse());
                 Parser.stringBuilder.append("<Stmt>\n");
             }
+            stmt.flag = 4;
         } else if (lexer.getType() == LexType.FORTK) {
             boolean flag = true;
             Parser.stringBuilder.append("FORTK for\n");
@@ -74,6 +78,7 @@ public class Stmt {
             lexer.next();
             if (lexer.getType() != LexType.SEMICN) {
                 stmt.forStmtArrayList.add(ForStmt.ForStmtParse());
+                stmt.hasFor1 = true;
                 Parser.stringBuilder.append("<ForStmt>\n");
                 if (lexer.getType() != LexType.SEMICN) {
                     flag = false;
@@ -99,6 +104,7 @@ public class Stmt {
             }
             if (lexer.getType() != LexType.RPARENT) {
                 stmt.forStmtArrayList.add(ForStmt.ForStmtParse());
+                stmt.hasFor2 = true;
                 Parser.stringBuilder.append("<ForStmt>\n");
                 if (lexer.getType() != LexType.RPARENT) Parser.error();
             }
@@ -260,5 +266,13 @@ public class Stmt {
             stmt.flag = 2;
         }
         return stmt;
+    }
+
+    public Boolean getHasFor1() {
+        return hasFor1;
+    }
+
+    public Boolean getHasFor2() {
+        return hasFor2;
     }
 }

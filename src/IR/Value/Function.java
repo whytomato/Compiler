@@ -63,8 +63,9 @@ public class Function extends Constant {
         }
         sb.append(")");
         sb.append("{\n");
-        for (BasicBlock basicBlock : basicBlocks) {
-            sb.append(basicBlock);
+        for (int i = 0; i < basicBlocks.size(); i++) {
+            if (i != 0) sb.append(basicBlocks.get(i).getBbName()).append(":\n");
+            sb.append(basicBlocks.get(i));
         }
         sb.append("}\n");
         return sb.toString();

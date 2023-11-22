@@ -85,6 +85,7 @@ public class IRBuildFactory {
 
     public BasicBlock buildBasicBlock(Function parentFunc) {
         BasicBlock basicBlock = new BasicBlock();
+        basicBlock.setBbName();
         parentFunc.getBasicBlocks().add(basicBlock);
         return basicBlock;
     }
@@ -268,5 +269,35 @@ public class IRBuildFactory {
         StoreInst storeInst = buildStoreInst(null, bb, argument, allocInst);
         module.pushSymbol(funcFParam.ident, allocInst);
 
+    }
+
+    public IcmpInst buildIcmpInst(BasicBlock bb, String name, Type type, String op, Value op1, Value op2) {
+        IcmpInst icmpInst = new IcmpInst(name, type, op1, op2);
+        icmpInst.setMemName(String.valueOf(icmpInst.getValNumber()));
+        icmpInst.setCond(op);
+        bb.getInstructions().add(icmpInst);
+        return icmpInst;
+    }
+
+    public BrInst buildBrInst(BasicBlock bb, String name, Type type, Value cond, BasicBlock destBb, BasicBlock l1bb, BasicBlock l2bb) {
+        BrInst brInst = new BrInst(name, type, cond);
+        if (cond == null) {
+            String destName = destBb.getBbName();
+            brInst.setDest(destName);
+            bb.getInstructions().add(brInst);
+        } else {
+            String l1Name = l1bb.getBbName();
+            String l2Name = l2bb.getBbName();
+            brInst.setLabels(l1Name, l2Name);
+            bb.getInstructions().add(brInst);
+        }
+        return brInst;
+    }
+
+    public Value buildZextInst(BasicBlock currentBB, Value value, Type type) {
+        ZextInst zextInst = new ZextInst(null, type, value);
+        zextInst.setMemName(String.valueOf(zextInst.getValNumber()));
+        currentBB.getInstructions().add(zextInst);
+        return zextInst;
     }
 }
