@@ -26,6 +26,14 @@ public class ArrayType implements Type {
         }
     }
 
+    public int getByteSize() {
+        int size = 1;
+        for (Integer i : arraySize) {
+            size *= i;
+        }
+        return size * 4;
+    }
+
     public void addSize(int num) {
         arraySize.add(num);
     }

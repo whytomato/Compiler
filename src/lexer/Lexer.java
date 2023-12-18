@@ -27,6 +27,7 @@ public class Lexer {
         type = null;
         num = 0;
         lineList = new ArrayList<>();
+
     }
 
     private final String source;
@@ -43,6 +44,7 @@ public class Lexer {
     private int line;
     private int lastLine;
     private int num;
+    private Boolean isPre = false;
     private final String[] key = {"main", "const", "int", "break", "continue", "if",
             "else", "for", "getint", "printf", "return", "void"};
     private final LexType[] lexTypes = LexType.values();
@@ -261,7 +263,11 @@ public class Lexer {
             p++;
             return next();
         }
-        lineList.add(line);
+        if (!isPre) {
+            //System.out.println(token);
+            lineList.add(line);
+        }
+
         return flag;
     }
 
@@ -290,6 +296,7 @@ public class Lexer {
         token = lastToken;
         type = lastType;
         line = lastLine;
+
     }
 
 //    public void pre(int n) {
@@ -339,9 +346,11 @@ public class Lexer {
         lastToken = token;
         lastType = type;
         lastLine = line;
+        isPre = true;
         if (next()) {
             preType = getType();
             back();
+            isPre = false;
         }
         return preType;
     }
@@ -351,11 +360,14 @@ public class Lexer {
         lastToken = token;
         lastType = type;
         lastLine = line;
+        isPre = true;
         if (next()) {
             if (next()) {
                 prePreType = getType();
                 back();
+                isPre = false;
             }
+
         }
         return prePreType;
     }
@@ -366,9 +378,21 @@ public class Lexer {
     }
 
     public int getLastLine() {
-        if (lineList.size() >= 2) {
+        if (lineList.size() >= 2)
             return lineList.get(lineList.size() - 2);
-        } else return 0;
+        return 0;
+
+//        int t = lineList.get(lineList.size() - 1);
+//        if (lineList.size() < 2) return 0;
+//        int i = lineList.size() - 2;
+//        for (; i >= 0; i--) {
+//            if (t != lineList.get(i))
+//                return lineList.get(i);
+//        }
+//        return i;
+//        if (lineList.size() >= 2) {
+//            return lineList.get(lineList.size() - 2);
+//        } else return 0;
 //        lastLine = line;
 //        int i = p - token.length() - 1;
 //        char c = source.charAt(i);

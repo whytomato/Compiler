@@ -21,6 +21,10 @@ public class ZextInst extends Instruction {
         return memName;
     }
 
+    public Value getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return "    " + memName + " = zext i1 " + value.getMemName() + " to " + getType();

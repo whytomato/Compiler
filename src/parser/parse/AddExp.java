@@ -52,9 +52,14 @@ public class AddExp {
             Parser.stringBuilder.append("<MulExp>\n");
         }
         for (int i = 0; i < addExp.mulExpArrayList.size(); i++) {
+            if (addExp.mulExpArrayList.get(i).dim == -1) {
+                addExp.dim = -1;
+                break;
+            }
             if (addExp.dim < addExp.mulExpArrayList.get(i).dim) {
                 addExp.dim = addExp.mulExpArrayList.get(i).dim;
             }
+
         }
         return addExp;
     }//AddExp → MulExp | AddExp ('+' | '−') MulExp

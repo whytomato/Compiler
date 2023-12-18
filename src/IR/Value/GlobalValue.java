@@ -111,4 +111,8 @@ public class GlobalValue extends Constant {
         }
         return arrayNum.get(index);
     }
+
+    public ArrayList<Integer> getArrayNum() {
+        return arrayNum;
+    }
 }

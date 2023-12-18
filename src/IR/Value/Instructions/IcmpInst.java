@@ -51,6 +51,18 @@ public class IcmpInst extends Instruction {
         this.memName = "%v" + memName;
     }
 
+    public String getCond() {
+        return cond;
+    }
+
+    public Value getOp1() {
+        return op1;
+    }
+
+    public Value getOp2() {
+        return op2;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

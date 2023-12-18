@@ -12,6 +12,10 @@ public class ReturnInst extends Instruction {
         this.value = value;
     }
 
+    public Value getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

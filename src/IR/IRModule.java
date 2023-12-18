@@ -67,21 +67,6 @@ public class IRModule {
     }
 
     private String print() {
-//        for (int i = 0; i < symTables.size(); i++) {
-////            System.out.println(i);
-//            HashMap<String, Value> symTable = symTables.get(i);
-//            for (String key : symTable.keySet()) {
-//                Value value = symTable.get(key);
-//                if (value instanceof AllocInst) {
-////                    System.out.println(key + ":" + ((AllocInst) symTable.get(key)).getMemName());
-//                } else if (value instanceof GlobalValue) {
-//                    System.out.println(key + ":" + ((GlobalValue) symTable.get(key)).getNum());
-//                } else if (value instanceof Function) {
-//                    System.out.println(key + ":");
-//                }
-//
-//            }
-//        }
         StringBuilder sb = new StringBuilder();
         sb.append("""
                 declare i32 @getint()
@@ -102,13 +87,8 @@ public class IRModule {
             sb.append(function);
 //            System.out.println(function);
         }
-        System.out.println(sb);
+//        System.out.println(sb);
         return sb.toString();
-//        for (int i = 0; i < module.functions.get(0).getBasicBlocks().get(0).getInstructions().size(); i++) {
-//            Instruction instruction = module.functions.get(0).getBasicBlocks().get(0).getInstructions().get(i);
-//            System.out.println(instruction);
-//
-//        }
     }
 
     public ArrayList<GlobalValue> getGlobalValues() {

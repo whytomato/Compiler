@@ -31,6 +31,10 @@ public class Function extends Constant {
         return memName;
     }
 
+    public ArrayList<Argument> getArgs() {
+        return args;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

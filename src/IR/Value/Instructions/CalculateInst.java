@@ -36,6 +36,14 @@ public class CalculateInst extends Instruction {
         return memName;
     }
 
+    public Value getLeft() {
+        return left;
+    }
+
+    public Value getRight() {
+        return right;
+    }
+
     @Override
     public String toString() {
         return "    " + memName + " = " + calType + " " + getType() + " "

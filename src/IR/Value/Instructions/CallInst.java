@@ -44,4 +44,8 @@ public class CallInst extends Instruction {
         sb.append(")");
         return sb.toString();
     }
+
+    public ArrayList<Value> getArgs() {
+        return args;
+    }
 }

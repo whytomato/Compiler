@@ -1,6 +1,7 @@
 import IR.IRModule;
 import error.Error;
 import lexer.Lexer;
+import mips.Mips;
 import parser.Parser;
 
 import java.io.*;
@@ -14,8 +15,9 @@ public class Compiler {
         Lexer lexer = Lexer.getInstance();
         Error error = Error.getInstance();
 //        String outputFilePath = "output.txt"; // 输出文件的路径
-//        String outputFilePath = "error.txt"; // 输出文件的路径
-        String outputFilePath = "llvm_ir.txt"; // 输出文件的路径
+        String outputFilePath = "error.txt"; // 输出文件的路径
+//        String outputFilePath = "llvm_ir.txt"; // 输出文件的路径
+//        String outputFilePath = "mips.txt"; // 输出文件的路径
         FileWriter fileWriter = new FileWriter(outputFilePath, false);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         Parser parser = new Parser();
@@ -29,7 +31,15 @@ public class Compiler {
 //                }
 //            }
         }
-//        printWriter.println(error.getPrint());
+        StringBuilder sb = error.getPrint();
+        if (!sb.isEmpty()) {
+            printWriter.println(sb);
+            printWriter.close();
+            return;
+        }
+        outputFilePath = "llvm_ir.txt";
+        fileWriter = new FileWriter(outputFilePath, false);
+        printWriter = new PrintWriter(fileWriter);
 //        printWriter.print(Parser.stringBuilder);
 
 //        error.errorOutput();
@@ -41,5 +51,11 @@ public class Compiler {
 //        module.visit();
         printWriter.println(module.visit());
         printWriter.close();
+        Mips mips = Mips.getInstance();
+//        mips.start();
+//        mips.print();
+
+//        printWriter.println(mips.print());
+
     }
 }

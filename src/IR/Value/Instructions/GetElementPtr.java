@@ -43,6 +43,13 @@ public class GetElementPtr extends Instruction {
 
     }
 
+    public Value getPtrval() {
+        return ptrval;
+    }
+
+    public Boolean getFlag() {
+        return flag;
+    }
 
     public void setMemName(String memName) {
         this.memName = memName;
