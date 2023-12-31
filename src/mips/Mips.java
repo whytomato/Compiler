@@ -4,6 +4,7 @@ import IR.IRModule;
 import IR.Type.ArrayType;
 import IR.Type.IntegerType;
 import IR.Type.PointerType;
+import IR.Type.Type;
 import IR.Value.*;
 import IR.Value.Instructions.*;
 
@@ -225,7 +226,51 @@ public class Mips {
         } else if (instruction instanceof ZextInst zextInst) {
             addMap(zextInst.getMemName(), zextInst.getValue());
         } else if (instruction instanceof GetElementPtr getElementPtr) {
-            
+            MipsInst lwInst;
+            if (getElementPtr.getPtrval() instanceof GlobalValue globalValue) {
+                lwInst = buildLa(globalValue);
+            } else {
+                lwInst = buildLw("", getElementPtr.getPtrval());
+            }
+            PointerType pointerType = (PointerType) getElementPtr.getPtrval().getType();
+            Type type = pointerType.getType();
+            Value value;
+            if (getElementPtr.getFlag()) {
+                type = ((ArrayType) type).getElementType();
+            }
+            MipsInst addInst = null, mulInst;
+            for (int i = 0; i < getElementPtr.getIndex().size(); i++) {
+                MipsInst getInst;
+                value = getElementPtr.getIndex().get(i);
+                if (type instanceof IntegerType) {
+                    if (value instanceof Constant constant) {
+                        getInst = buildLi(constant.getMemName());
+                    } else {
+                        getInst = buildLw("", value);
+                    }
+                    MipsInst liInst = buildLi(Integer.toString(4));
+                    mulInst = buildCal("mul", liInst.getOperand1(), getInst.getOperand1());
+                    addInst = new MipsInst("addu", lwInst.getOperand1(), lwInst.getOperand1(), mulInst.getOperand1());
+                    currentBB.getMipsInsts().add(addInst);
+//                    addInst = buildCal("add", lwInst.getOperand1(), mulInst.getOperand1());
+                    break;
+                }
+                if (value instanceof Constant constant) {
+                    getInst = buildLi(constant.getMemName());
+                } else {
+                    getInst = buildLw("", value);
+                }
+                type = (ArrayType) type;
+                MipsInst mipsInst = buildLi(Integer.toString(((ArrayType) type).getByteSize()));
+                mulInst = buildCal("mul", mipsInst.getOperand1(), getInst.getOperand1());
+                addInst = new MipsInst("addu", lwInst.getOperand1(), lwInst.getOperand1(), mulInst.getOperand1());
+                currentBB.getMipsInsts().add(addInst);
+                type = ((ArrayType) type).getElementType();
+                if (!getElementPtr.getFlag()) break;
+            }
+            updateMap(getElementPtr.getMemName());
+            buildSw(addInst.getOperand1(), "", getElementPtr);
+
         } else if (instruction instanceof CallInst callInst) {
             if (callInst.getName().equals("@putint")) {
                 buildLi(1);
@@ -284,12 +329,19 @@ public class Mips {
     }
 
     private void updateMap(String name, ArrayList<Integer> arraySize) {
-        hashMap.put(name, currentNum);
+//        hashMap.put(name, currentNum);
         int j = 1;
         for (Integer i : arraySize) {
             j *= i;
         }
         currentNum -= j * 4;
+        MipsInst liInst = buildLi(Integer.toString(currentNum + 4));
+        MipsInst calInst = buildCal("add", "$sp", liInst.getOperand1());
+
+        MipsInst mipsInst = new MipsInst("sw", calInst.getOperand1(), currentNum + "($sp)", "");
+        currentBB.getMipsInsts().add(mipsInst);
+        hashMap.put(name, currentNum);
+        currentNum -= 4;
     }
 
     private void addMap(String name, Value value) {
@@ -390,7 +442,7 @@ public class Mips {
             MipsInst mfloInst = new MipsInst(op, op1, "", "");
             currentBB.getMipsInsts().add(mfloInst);
             return mfloInst;
-        } else if (op.equals("div")) {
+        } else if (op.equals("sdiv")) {
             op = "div";
             MipsInst mipsInst = new MipsInst(op, op2, op3, "");
             currentBB.getMipsInsts().add(mipsInst);

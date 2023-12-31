@@ -15,6 +15,7 @@ public class GlobalValue extends Constant {
     private ArrayList<Integer> arraySize;
     private ArrayList<Integer> arrayNum;
     private int staticI = 0;
+    private Boolean isArray = false;
 
     public GlobalValue(String name, Type type, Boolean isConst) {
         super(name, type);
@@ -48,6 +49,10 @@ public class GlobalValue extends Constant {
         this.arraySize.add(num);
     }
 
+    public Boolean getIsArray() {
+        return isArray;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -56,6 +61,7 @@ public class GlobalValue extends Constant {
         if (isConst) sb.append("constant ");
         else sb.append("global ");
         if (((PointerType) getType()).getType() instanceof ArrayType) {
+//            isArray = true;
             print(sb, (ArrayType) ((PointerType) getType()).getType());
         } else {
             sb.append(((PointerType) getType()).getType());

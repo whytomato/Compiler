@@ -100,6 +100,7 @@ public class Visitor {
                 allocInst = (AllocInst) module.find(name);
                 allocInst.setValue(saveValue);
                 factory.buildStoreInst(null, currentBB, saveValue, allocInst);
+//                module.pushSymbol(name, saveValue);
                 saveValue = null;
             }
 
@@ -502,6 +503,16 @@ public class Visitor {
         } else {
             String name = lVal.ident;
             Value value = module.find(name);
+//            if (value instanceof GlobalValue globalValue) {
+//                if (!(((PointerType) value.getType()).getType() instanceof ArrayType)) {
+//                    saveValue = new Constant(Integer.toString(globalValue.getNum()), new IntegerType());
+//                    return;
+//                }
+//            }
+//            if (value instanceof Constant constant) {
+//                saveValue = constant;
+//                return;
+//            }
             if (((PointerType) value.getType()).getType() instanceof IntegerType) {
                 Type type = ((PointerType) value.getType()).getType();
                 saveValue = factory.buildLoadInst(type, value, currentBB);

@@ -37,6 +37,8 @@ public class Compiler {
             printWriter.close();
             return;
         }
+
+
         outputFilePath = "llvm_ir.txt";
         fileWriter = new FileWriter(outputFilePath, false);
         printWriter = new PrintWriter(fileWriter);
@@ -51,11 +53,16 @@ public class Compiler {
 //        module.visit();
         printWriter.println(module.visit());
         printWriter.close();
+
+
+        outputFilePath = "mips.txt";
+        fileWriter = new FileWriter(outputFilePath, false);
+        printWriter = new PrintWriter(fileWriter);
         Mips mips = Mips.getInstance();
-//        mips.start();
+        mips.start();
 //        mips.print();
 
-//        printWriter.println(mips.print());
-
+        printWriter.println(mips.print());
+        printWriter.close();
     }
 }
